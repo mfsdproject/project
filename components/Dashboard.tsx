@@ -442,7 +442,7 @@ const Dashboard = () => {
                     </div>
                     <div>
                         <label className="text-sm font-medium text-black">{t('chartStyle')}</label>
-                        <select value={selectedChartStyle} onChange={e => setSelectedChartStyle(e.target.value)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg text-black">
+                        <select value={selectedChartStyle} onChange={e => setSelectedChartStyle(e.target.value as 'line' | 'bar')} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg text-black">
                             <option value="line">{t('line')}</option>
                             <option value="bar">{t('bar')}</option>
                         </select>
