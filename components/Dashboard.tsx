@@ -95,7 +95,7 @@ const Dashboard = () => {
                 });
                 
                 const sortedData = Object.values(processedData).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-                setWeatherData(prev => ({ ...prev, [loggerId]: sortedData }));
+                setWeatherData((prev: any) => ({ ...prev, [loggerId]: sortedData }));
 
             } catch (err: any) {
                 setDataError(`${t('failedToFetch')} ${err.message}`);
