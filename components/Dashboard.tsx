@@ -3,6 +3,8 @@
 --- 6. UPDATED FILE: components/Dashboard.tsx ---
 This is your dashboard component, with the type error corrected.
 */
+
+
 'use client'; // This is a client component because it uses hooks and browser APIs
 
 import { useEffect, useState, useRef } from 'react';
