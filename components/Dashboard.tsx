@@ -3,7 +3,6 @@
 --- 6. UPDATED FILE: components/Dashboard.tsx ---
 This is your dashboard component, with the type error corrected.
 */
-
 'use client'; // This is a client component because it uses hooks and browser APIs
 
 import { useEffect, useState, useRef } from 'react';
@@ -12,7 +11,7 @@ import Chart from 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
 
 // --- Utility Functions ---
-const degreesToCardinal = (deg: number) => { 
+const degreesToCardinal = (deg: number): string => { 
     const DIRS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']; 
     return DIRS[Math.round(deg / 22.5) % 16]; 
 };
