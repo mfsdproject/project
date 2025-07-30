@@ -1,8 +1,3 @@
-
-/*
---- 6. UPDATED FILE: components/Dashboard.tsx ---
-This is your dashboard component, with the type error corrected.
-*/
 'use client'; // This is a client component because it uses hooks and browser APIs
 
 import { useEffect, useState, useRef } from 'react';
@@ -214,7 +209,20 @@ const Dashboard = () => {
             createChart('rh-gauge-container', {
                 type: 'doughnut',
                 data: { datasets: [{ data: [rh, 100 - rh], backgroundColor: [LOGO_COLORS.GOLD, '#e0e0e0'], borderWidth: 0, circumference: 180, rotation: 270 }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { tooltip: { enabled: false }, legend: { display: false } }, elements: { center: { text: `${rh.toFixed(1)}%`, color: '#333', fontStyle: 'bold', sidePadding: 20 } } },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    cutout: '80%', 
+                    plugins: { tooltip: { enabled: false }, legend: { display: false } }, 
+                    elements: { 
+                        center: { 
+                            text: `${rh.toFixed(1)}%`, 
+                            color: '#333', 
+                            fontStyle: 'bold', 
+                            sidePadding: 20 
+                        } 
+                    } 
+                } as any, // This 'as any' cast resolves the TypeScript build error
                 plugins: [{
                     id: 'doughnut-center-text',
                     beforeDraw: function(chart: any) {
