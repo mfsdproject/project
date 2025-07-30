@@ -7,8 +7,18 @@ This is your dashboard component, with the type error corrected.
 
 import { useEffect, useState, useRef } from 'react';
 import Head from 'next/head';
-import Chart from 'chart.js/auto';
+import Chart, { ChartConfiguration } from 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
+
+// --- Type Definitions for robust typing ---
+interface WeatherDataPoint {
+  timestamp: string;
+  [key: string]: any;
+}
+
+interface WeatherDataState {
+  [key: string]: WeatherDataPoint[];
+}
 
 // --- Utility Functions ---
 const degreesToCardinal = (deg: number): string => { 
@@ -20,9 +30,9 @@ const Dashboard = () => {
     // State management for React
     const [loadingData, setLoadingData] = useState(true);
     const [dataError, setDataError] = useState('');
-    const [weatherData, setWeatherData] = useState<any>({});
+    const [weatherData, setWeatherData] = useState<WeatherDataState>({});
     const [selectedLogger, setSelectedLogger] = useState('MFSD Thaton Barometric');
-    const [selectedChartStyle, setSelectedChartStyle] = useState('line');
+    const [selectedChartStyle, setSelectedChartStyle] = useState<'line' | 'bar'>('line');
     const [currentLanguage, setCurrentLanguage] = useState('en');
     const [dateRange, setDateRange] = useState({
         start: new Date(Date.now() - 24 * 60 * 60 * 1000),
@@ -83,7 +93,7 @@ const Dashboard = () => {
                 const rawData = (await response.json()).data;
                 if (!Array.isArray(rawData)) throw new Error('API response data is not an array.');
 
-                const processedData: { [key: string]: any } = {};
+                const processedData: { [key: string]: WeatherDataPoint } = {};
                 rawData.forEach(item => {
                     const timestamp = item.timestamp;
                     if (!processedData[timestamp]) processedData[timestamp] = { timestamp: timestamp };
@@ -94,7 +104,7 @@ const Dashboard = () => {
                 });
                 
                 const sortedData = Object.values(processedData).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-                setWeatherData((prev: any) => ({ ...prev, [loggerId]: sortedData }));
+                setWeatherData((prev: WeatherDataState) => ({ ...prev, [loggerId]: sortedData }));
 
             } catch (err: any) {
                 setDataError(`${t('failedToFetch')} ${err.message}`);
@@ -123,10 +133,10 @@ const Dashboard = () => {
 
     // --- Render Functions ---
     useEffect(() => {
-        const data = weatherData[LOGGER_IDS[selectedLogger]] || [];
+        const data: WeatherDataPoint[] = weatherData[LOGGER_IDS[selectedLogger]] || [];
         if (loadingData || dataError || data.length === 0) return;
 
-        const createChart = (containerId: string, config: any) => {
+        const createChart = (containerId: string, config: ChartConfiguration) => {
             const container = document.getElementById(containerId);
             if (!container) return;
             const canvas = container.querySelector('canvas');
@@ -140,7 +150,7 @@ const Dashboard = () => {
         };
 
         const renderWeatherChart = (containerId: string, titleKey: string, dataKey: string, color: string) => {
-            const relevantData = data.filter((d: any) => d[dataKey] !== undefined && d[dataKey] !== null);
+            const relevantData = data.filter((d: WeatherDataPoint) => d[dataKey] !== undefined && d[dataKey] !== null);
             const container = document.getElementById(containerId);
             if (!container) return;
 
@@ -150,14 +160,14 @@ const Dashboard = () => {
             }
              container.innerHTML = `<h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">${t(titleKey)}</h3><div class="chart-container"><canvas></canvas></div>`;
 
-            const dataTimestamps = relevantData.map((d: any) => new Date(d.timestamp).getTime());
+            const dataTimestamps = relevantData.map((d: WeatherDataPoint) => new Date(d.timestamp).getTime());
             const timeSpanHours = (Math.max(...dataTimestamps) - Math.min(...dataTimestamps)) / (1000 * 60 * 60);
 
             createChart(containerId, {
                 type: selectedChartStyle,
                 data: {
-                    labels: relevantData.map((d: any) => new Date(d.timestamp)),
-                    datasets: [{ label: t(titleKey), data: relevantData.map((d: any) => d[dataKey]), borderColor: color, backgroundColor: selectedChartStyle === 'bar' ? color + '80' : color, fill: selectedChartStyle === 'line' ? false : true, tension: 0.2, pointRadius: 2, pointBackgroundColor: color, pointHoverRadius: 6, borderWidth: 2 }]
+                    labels: relevantData.map((d: WeatherDataPoint) => new Date(d.timestamp)),
+                    datasets: [{ label: t(titleKey), data: relevantData.map((d: WeatherDataPoint) => d[dataKey]), borderColor: color, backgroundColor: selectedChartStyle === 'bar' ? color + '80' : color, fill: selectedChartStyle === 'line' ? false : true, tension: 0.2, pointRadius: 2, pointBackgroundColor: color, pointHoverRadius: 6, borderWidth: 2 }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
@@ -171,7 +181,7 @@ const Dashboard = () => {
             });
         };
         
-        const renderThermometerGauge = (containerId: string, data: any[]) => {
+        const renderThermometerGauge = (containerId: string, data: WeatherDataPoint[]) => {
             const container = document.getElementById(containerId);
             if (!container) return;
             const latestReading = data.filter(d => d.air_temperature !== undefined).slice(-1)[0];
@@ -191,7 +201,7 @@ const Dashboard = () => {
                  <p class="mt-8 text-3xl font-bold text-gray-800">${temp.toFixed(1)} °C</p>`;
         };
 
-        const renderRadialGauge = (containerId: string, data: any[]) => {
+        const renderRadialGauge = (containerId: string, data: WeatherDataPoint[]) => {
             const container = document.getElementById(containerId);
             if (!container) return;
             const latestReading = data.filter(d => d.relative_humidity !== undefined).slice(-1)[0];
@@ -221,7 +231,7 @@ const Dashboard = () => {
             });
         };
 
-        const renderWindDirectionGauge = (containerId: string, data: any[]) => {
+        const renderWindDirectionGauge = (containerId: string, data: WeatherDataPoint[]) => {
             const container = document.getElementById(containerId);
             if (!container) return;
             const latestReading = data.filter(d => d.wind_direction !== undefined).slice(-1)[0];
@@ -242,7 +252,7 @@ const Dashboard = () => {
                 <p class="text-lg font-medium text-gray-600">${cardinal}</p>`;
         };
 
-        const renderBatteryStatus = (containerId: string, data: any[]) => {
+        const renderBatteryStatus = (containerId: string, data: WeatherDataPoint[]) => {
             const container = document.getElementById(containerId);
             if (!container) return;
             const latestReading = data.filter(d => d.battery !== undefined).slice(-1)[0];
@@ -262,10 +272,10 @@ const Dashboard = () => {
                 </div>`;
         };
 
-        const renderWindroseChart = (containerId: string, data: any[]) => {
+        const renderWindroseChart = (containerId: string, data: WeatherDataPoint[]) => {
             const container = document.getElementById(containerId);
             if (!container) return;
-            const windData = data.filter((d: any) => d.wind_direction !== undefined && d.wind_speed !== undefined);
+            const windData = data.filter((d: WeatherDataPoint) => d.wind_direction !== undefined && d.wind_speed !== undefined);
 
             if (windData.length === 0) {
                 container.innerHTML = `<div class="bg-white p-6 rounded-xl shadow-lg flex items-center justify-center h-full"><p class="text-gray-500">${t('noWindData')}</p></div>`;
@@ -280,7 +290,7 @@ const Dashboard = () => {
                 '4-6 m/s': { min: 4, max: 6, color: '#fbbf24', data: Array(16).fill(0) },
                 '>6 m/s': { min: 6, max: Infinity, color: LOGO_COLORS.RED, data: Array(16).fill(0) },
             };
-            windData.forEach((d: any) => {
+            windData.forEach((d: WeatherDataPoint) => {
                 const dirIndex = Math.round(d.wind_direction / 22.5) % 16;
                 for (const binName in speedBins) {
                     if (d.wind_speed >= speedBins[binName].min && d.wind_speed < speedBins[binName].max) {
