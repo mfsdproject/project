@@ -1,8 +1,7 @@
 
-
 /*
 --- 6. UPDATED FILE: components/Dashboard.tsx ---
-This is your dashboard component, with updated text colors.
+This is your dashboard component, with the type error corrected.
 */
 
 'use client'; // This is a client component because it uses hooks and browser APIs
@@ -13,7 +12,7 @@ import Chart from 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
 
 // --- Utility Functions ---
-const degreesToCardinal = (deg) => { 
+const degreesToCardinal = (deg: number) => { 
     const DIRS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']; 
     return DIRS[Math.round(deg / 22.5) % 16]; 
 };
@@ -22,7 +21,7 @@ const Dashboard = () => {
     // State management for React
     const [loadingData, setLoadingData] = useState(true);
     const [dataError, setDataError] = useState('');
-    const [weatherData, setWeatherData] = useState({});
+    const [weatherData, setWeatherData] = useState<any>({});
     const [selectedLogger, setSelectedLogger] = useState('MFSD Thaton Barometric');
     const [selectedChartStyle, setSelectedChartStyle] = useState('line');
     const [currentLanguage, setCurrentLanguage] = useState('en');
@@ -32,13 +31,13 @@ const Dashboard = () => {
     });
 
     // Refs to hold chart instances
-    const chartInstancesRef = useRef({});
+    const chartInstancesRef = useRef<{ [key: string]: Chart }>({});
 
     // --- Constants and Mappings ---
     const LOGO_COLORS = { RED: '#C8102E', GOLD: '#FDB813', DARK: '#21272C' };
-    const LOGGER_IDS = { 'MFSD Thaton Barometric': '22226346', 'MFSD MLM Stationary': '22284699', 'MFSD MLM Transportable': '22284700' };
-    const SENSOR_TYPE_MAP = { "Pressure": "barometric_pressure", "Barometric Pressure": "barometric_pressure", "Baro Pressure": "barometric_pressure", "Wind Direction": "wind_direction", "Wind Speed": "wind_speed", "Gust Speed": "gust_speed", "Temperature": "air_temperature", "RH": "relative_humidity", "Dew Point": "dew_point", "Battery": "battery", "Rain": "rain", "Accumulated Rain": "accumulated_rain" };
-    const SENSOR_ICONS = { 
+    const LOGGER_IDS: { [key: string]: string } = { 'MFSD Thaton Barometric': '22226346', 'MFSD MLM Stationary': '22284699', 'MFSD MLM Transportable': '22284700' };
+    const SENSOR_TYPE_MAP: { [key: string]: string } = { "Pressure": "barometric_pressure", "Barometric Pressure": "barometric_pressure", "Baro Pressure": "barometric_pressure", "Wind Direction": "wind_direction", "Wind Speed": "wind_speed", "Gust Speed": "gust_speed", "Temperature": "air_temperature", "RH": "relative_humidity", "Dew Point": "dew_point", "Battery": "battery", "Rain": "rain", "Accumulated Rain": "accumulated_rain" };
+    const SENSOR_ICONS: { [key: string]: string } = { 
         barometric_pressure: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${LOGO_COLORS.RED}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 0-5 5c0 1.6.8 3 2 4H7c-2.2 0-4 1.8-4 4s1.8 4 4 4h10c2.2 0 4-1.8 4-4s-1.8-4-4-4h-2c1.2-1 2-2.4 2-4a5 5 0 0 0-5-5z"/><path d="M12 7v10"/></svg>`, 
         air_temperature: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${LOGO_COLORS.RED}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg>`, 
         relative_humidity: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${LOGO_COLORS.GOLD}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-2.5-3.5-2.5-1.5 1-3.5 2.5S5 13 5 15a7 7 0 0 0 7 7z"/><path d="M12 10v6"/><path d="M12 13h.01"/></svg>`, 
@@ -48,15 +47,15 @@ const Dashboard = () => {
         battery: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${LOGO_COLORS.GOLD}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"/><line x1="22" x2="22" y1="11" y2="13"/></svg>`, 
         default: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>` 
     };
-    const translations = {
+    const translations: { [key: string]: { [key: string]: string } } = {
         en: { weatherDashboard: "Weather Dashboard", device: "Device", chartStyle: "Chart Style", line: "Line", bar: "Bar", dateRange: "Date Range", today: "Today", last6Hours: "Last 6 Hours", last12Hours: "Last 12 Hours", last24Hours: "Last 24 Hours", last7Days: "Last 7 Days", last30Days: "Last 30 Days", loading: "Loading...", failedToFetch: "Failed to fetch data:", noDataFound: "No data found for the selected device and time range. Please try a different selection.", latestConditions: "Latest Conditions", noRecentData: "No recent data available.", batteryStatus: "Battery Status", temperature: "Temperature", relativeHumidity: "Relative Humidity", windrose: "Windrose", noWindData: "No wind data available.", barometricPressure: "Barometric Pressure", windSpeed: "Wind Speed", windDirection: "Wind Direction", gustSpeed: "Gust Speed", rainfall: "Rainfall", accumulatedRain: "Accumulated Rain", dewPoint: "Dew Point", batteryHistory: "Battery History", airTemperature: "Air Temperature", noDataFor: "No data for", currentWind: "Current Wind" },
         my: { weatherDashboard: "ရာသီဥတု ဒက်ရှ်ဘုတ်", device: "စက်ပစ္စည်း", chartStyle: "ဇယားပုံစံ", line: "လိုင်း", bar: "ဘား", dateRange: "ရက်စွဲအပိုင်းအခြား", today: "ယနေ့", last6Hours: "နောက်ဆုံး ၆ နာရီ", last12Hours: "နောက်ဆုံး ၁၂ နာရီ", last24Hours: "နောက်ဆုံး ၂၄ နာရီ", last7Days: "နောက်ဆုံး ၇ ရက်", last30Days: "နောက်ဆုံး ရက် ၃၀", loading: "တင်နေသည်...", failedToFetch: "ဒေတာရယူရန် မအောင်မြင်ပါ:", noDataFound: "ရွေးချယ်ထားသော စက်နှင့် အချိန်အတွက် ဒေတာမတွေ့ပါ။ ကျေးဇူးပြု၍ အခြားတစ်ခုကို ရွေးချယ်စမ်းကြည့်ပါ။", latestConditions: "နောက်ဆုံးအခြေအနေများ", noRecentData: "လတ်တလောဒေတာမရှိပါ။", batteryStatus: "ဘက်ထရီအခြေအနေ", temperature: "အပူချိန်", relativeHumidity: "စိုထိုင်းဆ", windrose: "လေညွှန်ကားချပ်", noWindData: "လေဒေတာမရှိပါ။", barometricPressure: "လေဖိအား", windSpeed: "လေတိုက်နှုန်း", windDirection: "လေညွှန်", gustSpeed: "လေပြင်းတိုက်နှုန်း", rainfall: "မိုးရေချိန်", accumulatedRain: "စုစုပေါင်းမိုးရေချိန်", dewPoint: "နှင်းရည်မှတ်", batteryHistory: "ဘက်ထရီမှတ်တမ်း", airTemperature: "လေထုအပူချိန်", noDataFor: "အတွက် ဒေတာမရှိပါ", currentWind: "လက်ရှိလေ" }
     };
 
-    const t = (key) => translations[currentLanguage]?.[key] || key;
+    const t = (key: string) => translations[currentLanguage]?.[key] || key;
     
-    const formatDateTimeForAPI = (date) => date.toISOString().slice(0, 19).replace('T', ' ');
-    const formatDateTimeForDisplay = (date) => date.toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const formatDateTimeForAPI = (date: Date) => date.toISOString().slice(0, 19).replace('T', ' ');
+    const formatDateTimeForDisplay = (date: Date) => date.toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
     // --- Main Data Fetching Logic ---
     useEffect(() => {
@@ -85,7 +84,7 @@ const Dashboard = () => {
                 const rawData = (await response.json()).data;
                 if (!Array.isArray(rawData)) throw new Error('API response data is not an array.');
 
-                const processedData = {};
+                const processedData: { [key: string]: any } = {};
                 rawData.forEach(item => {
                     const timestamp = item.timestamp;
                     if (!processedData[timestamp]) processedData[timestamp] = { timestamp: timestamp };
@@ -95,10 +94,10 @@ const Dashboard = () => {
                     }
                 });
                 
-                const sortedData = Object.values(processedData).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                const sortedData = Object.values(processedData).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
                 setWeatherData(prev => ({ ...prev, [loggerId]: sortedData }));
 
-            } catch (err) {
+            } catch (err: any) {
                 setDataError(`${t('failedToFetch')} ${err.message}`);
             } finally {
                 setLoadingData(false);
@@ -109,7 +108,7 @@ const Dashboard = () => {
     }, [selectedLogger, dateRange, currentLanguage]);
 
     // --- Handlers for UI controls ---
-    const handlePresetClick = (preset) => {
+    const handlePresetClick = (preset: string) => {
         const end = new Date();
         let start = new Date();
         switch (preset) {
@@ -128,20 +127,21 @@ const Dashboard = () => {
         const data = weatherData[LOGGER_IDS[selectedLogger]] || [];
         if (loadingData || dataError || data.length === 0) return;
 
-        const createChart = (containerId, config) => {
+        const createChart = (containerId: string, config: any) => {
             const container = document.getElementById(containerId);
             if (!container) return;
             const canvas = container.querySelector('canvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
+            if (!ctx) return;
             if (chartInstancesRef.current[containerId]) {
                 chartInstancesRef.current[containerId].destroy();
             }
             chartInstancesRef.current[containerId] = new Chart(ctx, config);
         };
 
-        const renderWeatherChart = (containerId, titleKey, dataKey, color) => {
-            const relevantData = data.filter(d => d[dataKey] !== undefined && d[dataKey] !== null);
+        const renderWeatherChart = (containerId: string, titleKey: string, dataKey: string, color: string) => {
+            const relevantData = data.filter((d: any) => d[dataKey] !== undefined && d[dataKey] !== null);
             const container = document.getElementById(containerId);
             if (!container) return;
 
@@ -151,14 +151,14 @@ const Dashboard = () => {
             }
              container.innerHTML = `<h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">${t(titleKey)}</h3><div class="chart-container"><canvas></canvas></div>`;
 
-            const dataTimestamps = relevantData.map(d => new Date(d.timestamp).getTime());
+            const dataTimestamps = relevantData.map((d: any) => new Date(d.timestamp).getTime());
             const timeSpanHours = (Math.max(...dataTimestamps) - Math.min(...dataTimestamps)) / (1000 * 60 * 60);
 
             createChart(containerId, {
                 type: selectedChartStyle,
                 data: {
-                    labels: relevantData.map(d => new Date(d.timestamp)),
-                    datasets: [{ label: t(titleKey), data: relevantData.map(d => d[dataKey]), borderColor: color, backgroundColor: selectedChartStyle === 'bar' ? color + '80' : color, fill: selectedChartStyle === 'line' ? false : true, tension: 0.2, pointRadius: 2, pointBackgroundColor: color, pointHoverRadius: 6, borderWidth: 2 }]
+                    labels: relevantData.map((d: any) => new Date(d.timestamp)),
+                    datasets: [{ label: t(titleKey), data: relevantData.map((d: any) => d[dataKey]), borderColor: color, backgroundColor: selectedChartStyle === 'bar' ? color + '80' : color, fill: selectedChartStyle === 'line' ? false : true, tension: 0.2, pointRadius: 2, pointBackgroundColor: color, pointHoverRadius: 6, borderWidth: 2 }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
@@ -167,12 +167,12 @@ const Dashboard = () => {
                         x: { type: 'time', time: { unit: timeSpanHours <= 2 ? 'minute' : timeSpanHours <= 48 ? 'hour' : 'day', tooltipFormat: 'MMM d, yyyy, h:mm:ss a', displayFormats: { minute: 'h:mm a', hour: 'h a', day: 'MMM d' } }, ticks: { autoSkip: true, maxTicksLimit: 12, maxRotation: 45, minRotation: 0 } }, 
                         y: { beginAtZero: ['wind_speed', 'gust_speed', 'rain', 'accumulated_rain'].includes(dataKey) } 
                     },
-                    plugins: { legend: { display: false }, tooltip: { callbacks: { title: (ctx) => new Date(ctx[0].parsed.x).toLocaleString() } } }
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { title: (ctx: any) => new Date(ctx[0].parsed.x).toLocaleString() } } }
                 }
             });
         };
         
-        const renderThermometerGauge = (containerId, data) => {
+        const renderThermometerGauge = (containerId: string, data: any[]) => {
             const container = document.getElementById(containerId);
             if (!container) return;
             const latestReading = data.filter(d => d.air_temperature !== undefined).slice(-1)[0];
@@ -192,7 +192,7 @@ const Dashboard = () => {
                  <p class="mt-8 text-3xl font-bold text-gray-800">${temp.toFixed(1)} °C</p>`;
         };
 
-        const renderRadialGauge = (containerId, data) => {
+        const renderRadialGauge = (containerId: string, data: any[]) => {
             const container = document.getElementById(containerId);
             if (!container) return;
             const latestReading = data.filter(d => d.relative_humidity !== undefined).slice(-1)[0];
@@ -208,7 +208,7 @@ const Dashboard = () => {
                 options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { tooltip: { enabled: false }, legend: { display: false } }, elements: { center: { text: `${rh.toFixed(1)}%`, color: '#333', fontStyle: 'bold', sidePadding: 20 } } },
                 plugins: [{
                     id: 'doughnut-center-text',
-                    beforeDraw: function(chart) {
+                    beforeDraw: function(chart: any) {
                         const { width, height, ctx } = chart;
                         const { center } = chart.options.elements;
                         ctx.restore();
@@ -222,7 +222,7 @@ const Dashboard = () => {
             });
         };
 
-        const renderWindDirectionGauge = (containerId, data) => {
+        const renderWindDirectionGauge = (containerId: string, data: any[]) => {
             const container = document.getElementById(containerId);
             if (!container) return;
             const latestReading = data.filter(d => d.wind_direction !== undefined).slice(-1)[0];
@@ -243,7 +243,7 @@ const Dashboard = () => {
                 <p class="text-lg font-medium text-gray-600">${cardinal}</p>`;
         };
 
-        const renderBatteryStatus = (containerId, data) => {
+        const renderBatteryStatus = (containerId: string, data: any[]) => {
             const container = document.getElementById(containerId);
             if (!container) return;
             const latestReading = data.filter(d => d.battery !== undefined).slice(-1)[0];
@@ -263,10 +263,10 @@ const Dashboard = () => {
                 </div>`;
         };
 
-        const renderWindroseChart = (containerId, data) => {
+        const renderWindroseChart = (containerId: string, data: any[]) => {
             const container = document.getElementById(containerId);
             if (!container) return;
-            const windData = data.filter(d => d.wind_direction !== undefined && d.wind_speed !== undefined);
+            const windData = data.filter((d: any) => d.wind_direction !== undefined && d.wind_speed !== undefined);
 
             if (windData.length === 0) {
                 container.innerHTML = `<div class="bg-white p-6 rounded-xl shadow-lg flex items-center justify-center h-full"><p class="text-gray-500">${t('noWindData')}</p></div>`;
@@ -275,13 +275,13 @@ const Dashboard = () => {
             container.innerHTML = `<h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">${t('windrose')}</h3><div class="chart-container"><canvas id="windrose-chart"></canvas></div>`;
 
             const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-            const speedBins = {
+            const speedBins: { [key: string]: any } = {
                 '0-2 m/s': { min: 0, max: 2, color: '#a7f3d0', data: Array(16).fill(0) },
                 '2-4 m/s': { min: 2, max: 4, color: LOGO_COLORS.GOLD, data: Array(16).fill(0) },
                 '4-6 m/s': { min: 4, max: 6, color: '#fbbf24', data: Array(16).fill(0) },
                 '>6 m/s': { min: 6, max: Infinity, color: LOGO_COLORS.RED, data: Array(16).fill(0) },
             };
-            windData.forEach(d => {
+            windData.forEach((d: any) => {
                 const dirIndex = Math.round(d.wind_direction / 22.5) % 16;
                 for (const binName in speedBins) {
                     if (d.wind_speed >= speedBins[binName].min && d.wind_speed < speedBins[binName].max) {
@@ -317,10 +317,10 @@ const Dashboard = () => {
 
     const renderLatestReadings = () => {
         const data = weatherData[LOGGER_IDS[selectedLogger]] || [];
-        const latestData = {};
+        const latestData: { [key: string]: any } = {};
         Object.keys(SENSOR_TYPE_MAP).forEach(sensorName => {
             const key = SENSOR_TYPE_MAP[sensorName];
-            const relevantData = data.filter(d => d[key] !== undefined && d[key] !== null).slice(-1)[0];
+            const relevantData = data.filter((d: any) => d[key] !== undefined && d[key] !== null).slice(-1)[0];
             if (relevantData) latestData[key] = { value: relevantData[key], timestamp: relevantData.timestamp };
         });
 
